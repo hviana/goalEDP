@@ -1,0 +1,45 @@
+/* JSON Pretty Print BEGIN JS */
+.print-json { font-family: monospace; font-size: 8pt; }
+.print-json ul { margin: 0 0 0 .1em; list-style: none; padding-left: 1rem; }
+.print-json  li { padding: 0; margin: 0;}
+.print-json  li:after { content: ','; }
+.print-json  li:last-child:after { content: ''; }
+.print-json span.object { font-weight: bold; }
+.print-json span.string, span.string a { color: green; }
+.print-json span.string:before { content: '"'; }
+.print-json span.string:after { content: '"'; }
+.print-json span.number { color: blue; }
+.print-json span.null { color: red; }
+.print-json span.boolean { color: gray; }
+.print-json span.link a { color: green; text-decoration: underline; }
+.print-json textarea { font-family: monospace; font-size: 1.1em; width: 98%; height: 30%; }
+.print-json pre {
+  word-wrap: initial !important;
+  white-space: pre !important;
+}
+/* JSON Pretty Print END JS */
+
+
+.event{
+  max-width: 255px;
+  max-height: 200px;
+  overflow: auto;
+}
+.exp-level{
+  margin-bottom: 100px;
+  width: max-content;
+  min-width: 100%;
+}
+.line-text{
+  padding: 5px;
+  margin:50%;
+  background-color:white;
+  font-size: 9pt;
+  background-color: white;
+}
+.event-merged{
+  border: 1px solid red;
+}
+.topic-selector{
+  max-height: 200px;
+}

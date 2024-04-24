@@ -27,8 +27,7 @@ class ReviewAccident(BeliefsReviewer):
             # In fact, in this framework all event values ​​must be serializable to JSON.
             # If you want to use complex structured data, use compositions with Python's dict structure.
             beliefs["accident.coord"] = self.eventQueueByTopic["accident"][-1].value["coord"]
-            beliefs["accident.hasAtLeastTwoVictims"] = len(
-                self.eventQueueByTopic["accident"][-1].value["victims"]) >= 2
+            beliefs["accident.hasFire"] = self.eventQueueByTopic["accident"][-1].value["smoke"] > 50
             beliefs["accident.severityIsHigh"] = False
             for victim in self.eventQueueByTopic["accident"][-1].value["victims"]:
                 if victim["bpm"] < 60 or victim["bpm"] > 100:
@@ -43,13 +42,13 @@ class ReviewAccident(BeliefsReviewer):
 class RescuePromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc="Promotes rescue goal statuses", beliefs=["accident.hasAtLeastTwoVictims", "accident.severityIsHigh"], promotionNames=["intention"])
+            desc="Promotes rescue goal statuses", beliefs=["accident.hasFire", "accident.severityIsHigh"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         # The event queue is cleared each time the entity is processed. Maybe you want to save the promotions in an object variable.
         promotions = dict()
-        if ("accident.severityIsHigh" in self.eventQueueByTopic) and ("accident.hasAtLeastTwoVictims" in self.eventQueueByTopic):
-            if (self.eventQueueByTopic["accident.severityIsHigh"][-1].value) or (self.eventQueueByTopic["accident.hasAtLeastTwoVictims"][-1].value):
+        if ("accident.severityIsHigh" in self.eventQueueByTopic) and ("accident.hasFire" in self.eventQueueByTopic):
+            if (self.eventQueueByTopic["accident.severityIsHigh"][-1].value) or (self.eventQueueByTopic["accident.hasFire"][-1].value):
                 promotions["intention"] = True
             else:
                 promotions["intention"] = False
@@ -95,7 +94,7 @@ broker.startProcess()
 # Enter external events, from a simulator for example.
 broker.inputExternalEvents([
     Event("accident", {"victims": [
-          {"mmHg": [120, 80], "bpm":50}], "coord": [30, 40]})
+          {"mmHg": [120, 80], "bpm":50}], "coord": [30, 40], "smoke": 60})
 ])
 
 # instantiates the explanation manager

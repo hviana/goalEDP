@@ -31,11 +31,10 @@
   min-width: 100%;
 }
 .line-text{
-  padding: 5px;
+  padding: 0;
   margin:50%;
   background-color:white;
   font-size: 9pt;
-  background-color: white;
 }
 .event-merged{
   border: 1px solid red;

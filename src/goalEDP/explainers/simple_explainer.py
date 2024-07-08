@@ -129,6 +129,8 @@ class SimpleExplainer(Explainer):
     def _avgDiff(self, times1: List[float], times2: List[float]) -> float:
         sum = 0
         maxLen = len(times1)
+        if(maxLen == 0):
+            return 0
         if (len(times2) < len(times1)):
             maxLen = len(times2)
         for index in range(maxLen):

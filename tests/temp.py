@@ -1,8 +1,11 @@
-from goalEDP.extensions.goal import BeliefsReviewer, GoalStatusPromoter, Goal, Action, Agent, GoalBroker, Conflict
-from goalEDP.explainers.simple_explainer import SimpleExplainer
-from goalEDP.storages.in_memory import InMemoryHistory
-from goalEDP.core import Event
-from goalEDP.extensions.web_gui import WebGUI
+from src.goalEDP.extensions.goal import BeliefsReviewer, GoalStatusPromoter, Goal, Action, Agent, GoalBroker, Conflict
+from src.goalEDP.explainers.simple_explainer import SimpleExplainer
+from src.goalEDP.storages.in_memory import InMemoryHistory
+from src.goalEDP.core import Event
+from src.goalEDP.extensions.web_gui import WebGUI
+
+import random
+import time
 
 
 # Describe how the agent works:
@@ -35,6 +38,17 @@ class ReviewAccident(BeliefsReviewer):
                 if victim["mmHg"][0] > 14 or victim["mmHg"][1] < 6:
                     beliefs["accident.severityIsHigh"] = True
         return beliefs
+    
+class ReviewBatteryLevel(BeliefsReviewer):
+    def __init__(self):
+        super().__init__(
+            desc="Review battery level", attrs=["battery"])
+
+    async def reviewBeliefs(self):
+        beliefs = dict()
+        if ("battery" in self.eventQueueByTopic):
+            beliefs["low battery level"] = self.eventQueueByTopic["battery"][-1].value["percentage"] < 30
+        return beliefs
 
 # All goal statuses must be True for it to be pursued
 
@@ -54,6 +68,21 @@ class RescuePromoter(GoalStatusPromoter):
                 promotions["intention"] = False
         return promotions
 
+class RechargeBatteryPromoter(GoalStatusPromoter):
+    def __init__(self):
+        super().__init__(
+            desc="Promotes battery recharge goal statuses", beliefs=["low battery level"], promotionNames=["intention"])
+
+    async def promoteOrDemote(self):
+        # The event queue is cleared each time the entity is processed. Maybe you want to save the promotions in an object variable.
+        promotions = dict()
+        if ("low battery level" in self.eventQueueByTopic):
+            if (self.eventQueueByTopic["low battery level"][-1].value):
+                promotions["intention"] = True
+            else:
+                promotions["intention"] = False
+        return promotions
+
 
 class RescueAction(Action):
     def __init__(self):
@@ -63,25 +92,39 @@ class RescueAction(Action):
     async def procedure(self) -> None:
         print("Rescue at: " +
               str(self.eventQueueByTopic["accident.coord"][-1].value))
+        
+class RechargeBatteryAction(Action):
+    def __init__(self):
+        super().__init__(
+            desc="Recharge battery action")
+
+    async def procedure(self) -> None:
+        print("Recharging battery")
 
 # Goals with highest priority are pursued first
 
 
 class Rescue(Goal):
     def __init__(self):
-        super().__init__(desc="Objective of rescuing victims of serious accidents",
+        super().__init__(desc="Rescuing victims of accidents",
                          promoter=RescuePromoter(), plan=[RescueAction()], priority=0)
+        
+class Recharge(Goal):
+    def __init__(self):
+        super().__init__(desc="Recharging the battery if the level is low",
+                         promoter=RechargeBatteryPromoter(), plan=[RechargeBatteryAction()], priority=1)
 
-# If conflict is detected, the goal with the highest priority is chosen, with the others discarded.
-#
-# class ConflictOne(Conflict):
-#    def __init__(self):
-#        super().__init__(
-#            desc="Recharge battery instead of saving victim", conflictingGoals=[goalInstance1, goalInstance2])
+rescueGoal = Rescue()
+rechargeGoal = Recharge()
+
+class RechargeInsteadOfSaveConflict(Conflict):
+    def __init__(self):
+        super().__init__(
+            desc="Recharge battery instead of saving victim", conflictingGoals=[rescueGoal, rechargeGoal])
 
 
 agent1 = Agent(desc="Robot that saves victims", beliefsReviewers=[
-               ReviewAccident()], goals=[Rescue()], conflicts=[])
+               ReviewAccident(), ReviewBatteryLevel()], goals=[rescueGoal,rechargeGoal], conflicts=[RechargeInsteadOfSaveConflict()])
 
 # Instantiates history to save events.
 history = InMemoryHistory()
@@ -92,10 +135,13 @@ broker = GoalBroker(agents=[agent1], history=history)
 broker.startProcess()
 
 # Enter external events, from a simulator for example.
-broker.inputExternalEvents([
-    Event("accident", {"victims": [
-          {"mmHg": [120, 80], "bpm":50}], "coord": [30, 40], "smoke": 60})
-])
+for n in range(1000):
+    broker.inputExternalEvents([
+        Event("accident", {"victims": [
+            {"mmHg": [random.randint(10, 15), random.randint(5, 10)], "bpm":random.randint(50, 110)}], "coord": [random.randint(0, 100), random.randint(0, 100)], "smoke": random.randint(0, 100)}),
+        Event("battery", {"percentage":random.randint(0, 100)})
+    ])
+    time.sleep(1)
 
 # instantiates the explanation manager
 explainer = SimpleExplainer(broker, broker.history)

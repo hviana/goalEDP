@@ -15,7 +15,6 @@ class InMemoryHistory(History):
         super().__init__()
         self.events: list[Event] = []
         self.hashes: dict[str, Any] = dict()
-        self.outsCounter: dict[str, int] = dict()
 
     async def getEventsAsync(self, filters: dict) -> List[Event]:
         res: list[Event] = []

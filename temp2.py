@@ -8,132 +8,136 @@ import random
 import time
 
 
-# Describe how the agent works:
-# The Agent has the following flow:
-# 1) revise beliefs
-# 2) promotes goals statuses
-# 3) detects conflicts
-# 4) pursues goals
-
 segAgent = "Segmentation agent | "
 autAgent = "Automating agent | "
 
-class ReviewAccident(BeliefsReviewer):
+class ReviewSegPremium(BeliefsReviewer):
     def __init__(self):
         # Call to superclass constructor
         super().__init__(
-            desc="Review accident data", attrs=["accident"])  # Attributes can be external events, inputted or not by a simulator. They can also be events that represent communication between agents.
+            desc=segAgent+"Review purchase data, for the premium segment", attrs=["purchase"])  # Attributes can be external events, inputted or not by a simulator. They can also be events that represent communication between agents.
 
     async def reviewBeliefs(self):
         # The event queue is cleared each time the entity is processed. Maybe you want to save the beliefs in an object variable.
         beliefs = dict()
-        if ("accident" in self.eventQueueByTopic):
-            # "-1" to get the last one in queue
-            # Use only JSON-serializable variables as belief values.
-            # In fact, in this framework all event values ​​must be serializable to JSON.
-            # If you want to use complex structured data, use compositions with Python's dict structure.
-            beliefs["accident.coord"] = self.eventQueueByTopic["accident"][-1].value["coord"]
-            beliefs["accident.hasFire"] = self.eventQueueByTopic["accident"][-1].value["smoke"] > 50
-            beliefs["accident.severityIsHigh"] = False
-            for victim in self.eventQueueByTopic["accident"][-1].value["victims"]:
-                if victim["bpm"] < 60 or victim["bpm"] > 100:
-                    beliefs["accident.severityIsHigh"] = True
-                if victim["mmHg"][0] > 14 or victim["mmHg"][1] < 6:
-                    beliefs["accident.severityIsHigh"] = True
+        if ("purchase" in self.eventQueueByTopic):
+            beliefs["purchase"] = self.eventQueueByTopic["purchase"][-1].value
         return beliefs
-    
-class ReviewBatteryLevel(BeliefsReviewer):
+class ReviewSegInactive(BeliefsReviewer):
     def __init__(self):
+        # Call to superclass constructor
         super().__init__(
-            desc="Review battery level", attrs=["battery"])
+            desc=segAgent+"Review purchase data, for the inactive segment", attrs=["purchase"])  # Attributes can be external events, inputted or not by a simulator. They can also be events that represent communication between agents.
 
     async def reviewBeliefs(self):
+        # The event queue is cleared each time the entity is processed. Maybe you want to save the beliefs in an object variable.
         beliefs = dict()
-        if ("battery" in self.eventQueueByTopic):
-            beliefs["low battery level"] = self.eventQueueByTopic["battery"][-1].value["percentage"] < 30
+        if ("purchase" in self.eventQueueByTopic):
+            beliefs["purchase"] = self.eventQueueByTopic["purchase"][-1].value
         return beliefs
 
-# All goal statuses must be True for it to be pursued
 
-
-class RescuePromoter(GoalStatusPromoter):
+class PremiumAddPromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc="Promotes rescue goal statuses", beliefs=["accident.hasFire", "accident.severityIsHigh"], promotionNames=["intention"])
+            desc=segAgent+"Promotes goal - add customer to premium segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
-        # The event queue is cleared each time the entity is processed. Maybe you want to save the promotions in an object variable.
         promotions = dict()
-        if ("accident.severityIsHigh" in self.eventQueueByTopic) and ("accident.hasFire" in self.eventQueueByTopic):
-            if (self.eventQueueByTopic["accident.severityIsHigh"][-1].value) or (self.eventQueueByTopic["accident.hasFire"][-1].value):
-                promotions["intention"] = True
-            else:
-                promotions["intention"] = False
         return promotions
 
-class RechargeBatteryPromoter(GoalStatusPromoter):
+class PremiumRemovePromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc="Promotes battery recharge goal statuses", beliefs=["low battery level"], promotionNames=["intention"])
+            desc=segAgent+"Promotes goal - remove customer from the premium segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
-        # The event queue is cleared each time the entity is processed. Maybe you want to save the promotions in an object variable.
         promotions = dict()
-        if ("low battery level" in self.eventQueueByTopic):
-            if (self.eventQueueByTopic["low battery level"][-1].value):
-                promotions["intention"] = True
-            else:
-                promotions["intention"] = False
         return promotions
-
-
-class RescueAction(Action):
+class InactiveAddPromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc="Action to rescue victims", beliefs=["accident.coord"])
+            desc=segAgent+"Promotes goal - add customer to inactive segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
+
+    async def promoteOrDemote(self):
+        promotions = dict()
+        return promotions
+
+class InactiveRemovePromoter(GoalStatusPromoter):
+    def __init__(self):
+        super().__init__(
+            desc=segAgent+"Promotes goal - remove customer from the inactive segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
+
+    async def promoteOrDemote(self):
+        promotions = dict()
+        return promotions
+
+class PremiumAddAction(Action):
+    def __init__(self):
+        super().__init__(
+            desc=segAgent+"Action to add customer to the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        print("Rescue at: " +
-              str(self.eventQueueByTopic["accident.coord"][-1].value))
+        print("TODO")
+
+class PremiumRemoveAction(Action):
+    def __init__(self):
+        super().__init__(
+            desc=segAgent+"Action to remove customer from the premium segment", beliefs=["client_id"])
+
+    async def procedure(self) -> None:
+        print("TODO")
+
+class InactiveAddAction(Action):
+    def __init__(self):
+        super().__init__(
+            desc=segAgent+"Action to add customer to the inactive segment", beliefs=["client_id"])
+
+    async def procedure(self) -> None:
+        print("TODO")
+
+class InactiveRemoveAction(Action):
+    def __init__(self):
+        super().__init__(
+            desc=segAgent+"Action to remove customer from the inactive segment", beliefs=["client_id"])
+
+    async def procedure(self) -> None:
+        print("TODO")
         
-class RechargeBatteryAction(Action):
-    def __init__(self):
-        super().__init__(
-            desc="Recharge battery action")
-
-    async def procedure(self) -> None:
-        print("Recharging battery")
-
 # Goals with highest priority are pursued first
 
 
-class Rescue(Goal):
+class PremiumAddGoal(Goal):
     def __init__(self):
-        super().__init__(desc="Rescuing victims of accidents",
-                         promoter=RescuePromoter(), plan=[RescueAction()], priority=0)
+        super().__init__(desc=segAgent+"Add customer to the premium segment",
+                         promoter=PremiumAddPromoter(), plan=[PremiumAddAction()], priority=0)
         
-class Recharge(Goal):
+class PremiumRemoveGoal(Goal):
     def __init__(self):
-        super().__init__(desc="Recharging the battery if the level is low",
-                         promoter=RechargeBatteryPromoter(), plan=[RechargeBatteryAction()], priority=1)
-
-rescueGoal = Rescue()
-rechargeGoal = Recharge()
-
-class RechargeInsteadOfSaveConflict(Conflict):
+        super().__init__(desc=segAgent+"remove customer from the premium segment",
+                         promoter=PremiumRemovePromoter(), plan=[PremiumRemoveAction()], priority=0)
+class InactiveAddGoal(Goal):
     def __init__(self):
-        super().__init__(
-            desc="Recharge battery instead of saving victim", conflictingGoals=[rescueGoal, rechargeGoal])
+        super().__init__(desc=segAgent+"Add customer to the inactive segment",
+                         promoter=InactiveAddPromoter(), plan=[InactiveAddAction()], priority=0)
+        
+class InactiveRemoveGoal(Goal):
+    def __init__(self):
+        super().__init__(desc=segAgent+"remove customer from the inactive segment",
+                         promoter=InactiveRemovePromoter(), plan=[InactiveRemoveAction()], priority=0)
 
+premiumAddGoal = PremiumAddGoal()
+premiumRemoveGoal = PremiumRemoveGoal()
+inactiveAddGoal = InactiveAddGoal()
+inactiveRemoveGoal = InactiveRemoveGoal()
 
-agent1 = Agent(desc="Robot that saves victims", beliefsReviewers=[
-               ReviewAccident(), ReviewBatteryLevel()], goals=[rescueGoal,rechargeGoal], conflicts=[RechargeInsteadOfSaveConflict()])
+segAgent = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewSegInactive(), ReviewSegPremium()], goals=[premiumAddGoal,premiumRemoveGoal,inactiveAddGoal, inactiveRemoveGoal], conflicts=[])
 
 # Instantiates history to save events.
 history = InMemoryHistory()
 
 # Instantiates the event broker, which also controls the execution sequence
-broker = GoalBroker(agents=[agent1], history=history)
+broker = GoalBroker(agents=[segAgent], history=history)
 
 broker.startProcess()
 

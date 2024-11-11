@@ -77,7 +77,8 @@ class PremiumAddAction(Action):
             desc=segAgent+"Action to add customer to the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        r = requests.post('/post', json={"client_id": self.eventQueueByTopic["client_id"][-1].value})
+        r = requests.post('/comm', json=[{"segment": "premium","client_id": self.eventQueueByTopic["client_id"][-1].value}, "premium"])
+        print("Add customer to the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class PremiumRemoveAction(Action):
     def __init__(self):
@@ -85,7 +86,7 @@ class PremiumRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        print("TODO")
+        print("Remove customer from the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class InactiveAddAction(Action):
     def __init__(self):
@@ -93,7 +94,8 @@ class InactiveAddAction(Action):
             desc=segAgent+"Action to add customer to the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        print("TODO")
+        r = requests.post('/comm', json=[{"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}, "premium"])
+        print("Add customer to the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class InactiveRemoveAction(Action):
     def __init__(self):
@@ -101,7 +103,7 @@ class InactiveRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        print("TODO")
+        print("Remove customer from the inactive segment: "+ self.eventQueueByTopic["client_id"][-1].value)
         
 # Goals with highest priority are pursued first
 

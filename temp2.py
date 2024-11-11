@@ -96,7 +96,7 @@ class PremiumAddAction(Action):
             desc=segAgent+"Action to add customer to the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"topic":"segment-update", "value":{"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Add customer to the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class PremiumRemoveAction(Action):
@@ -105,7 +105,7 @@ class PremiumRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"topic":"segment-update", "value":{"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Remove customer from the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class InactiveAddAction(Action):
@@ -114,7 +114,7 @@ class InactiveAddAction(Action):
             desc=segAgent+"Action to add customer to the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"topic":"segment-update", "value":{"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Add customer to the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class InactiveRemoveAction(Action):
@@ -123,7 +123,7 @@ class InactiveRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"topic":"segment-update", "value":{"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Remove customer from the inactive segment: "+ self.eventQueueByTopic["client_id"][-1].value)
         
 # Goals with highest priority are pursued first
@@ -167,7 +167,9 @@ class ReviewCustomerCoupon(BeliefsReviewer):
         beliefs = dict()
         if ("segment-update" in self.eventQueueByTopic):
             beliefs["client_id"] = self.eventQueueByTopic["segment-update"][-1].value["client_id"]
-            beliefs["segment"] = self.eventQueueByTopic["segment-update"][-1].value["segment"]
+            beliefs["segment"] = self.eventQueueByTopic["segment-update"][-1].value["segment"],
+            beliefs["abandoned_cart"] = self.eventQueueByTopic["segment-update"][-1].value["abandoned_cart"]
+            beliefs["accessed_site"] = self.eventQueueByTopic["segment-update"][-1].value["accessed_site"]
         return beliefs
 
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
@@ -177,6 +179,18 @@ class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
 
     async def promoteOrDemote(self):
         promotions = dict()
+        enterPremiumSegment = False
+        outInactiveSegment = False
+        accessedSite = False
+        if ("segment" in self.eventQueueByTopic):
+            enterPremiumSegment = (self.eventQueueByTopic["segment"][-1].value == "premium")
+            outInactiveSegment = (self.eventQueueByTopic["segment"][-1].value == "not-inactive")
+        if ("accessed_site" in self.eventQueueByTopic):
+            accessedSite = (self.eventQueueByTopic["accessed_site"][-1].value == True)
+        if(accessedSite and (enterPremiumSegment or outInactiveSegment)):
+            promotions["intention"] = True
+        else:
+            promotions["intention"] = False
         return promotions
 
 class Give10PercentCouponPromoter(GoalStatusPromoter):
@@ -186,6 +200,16 @@ class Give10PercentCouponPromoter(GoalStatusPromoter):
 
     async def promoteOrDemote(self):
         promotions = dict()
+        enterPremiumSegment = False
+        abandonedCart = False
+        if ("segment" in self.eventQueueByTopic):
+            enterPremiumSegment = (self.eventQueueByTopic["segment"][-1].value == "premium")
+        if ("abandoned_cart" in self.eventQueueByTopic):
+            abandonedCart = (self.eventQueueByTopic["abandoned_cart"][-1].value == True)
+        if(abandonedCart and enterPremiumSegment):
+            promotions["intention"] = True
+        else:
+            promotions["intention"] = False
         return promotions
 
 class GiveFreeShippingCouponAction(Action):
@@ -215,7 +239,7 @@ class GiveFreeShippingCouponGoal(Goal):
         super().__init__(desc=autAgent+"Give free shipping coupon",
                          promoter=GiveFreeShippingCouponPromoter(), plan=[GiveFreeShippingCouponAction()], priority=0)
 
-autAgentInstance = Agent(desc="utomating agent", beliefsReviewers=[ReviewCustomerCoupon()], goals=[Give10PercentCoupon, GiveFreeShippingCouponGoal], conflicts=[])
+autAgentInstance = Agent(desc="Automating agent", beliefsReviewers=[ReviewCustomerCoupon()], goals=[Give10PercentCoupon, GiveFreeShippingCouponGoal], conflicts=[])
 
 # Instantiates history to save events.
 history = InMemoryHistory()

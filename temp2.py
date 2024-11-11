@@ -7,6 +7,7 @@ from src.goalEDP.extensions.web_gui import WebGUI
 import random
 import time
 import requests
+from datetime import date
 
 
 segAgent = "Segmentation agent | "
@@ -24,6 +25,7 @@ class ReviewSegPremium(BeliefsReviewer):
         return beliefs
 class ReviewSegInactive(BeliefsReviewer):
     def __init__(self):
+        promotions = dict()
         # Call to superclass constructor
         super().__init__(
             desc=segAgent+"Review purchase data, for the inactive segment", attrs=["purchase"])  # Attributes can be external events, inputted or not by a simulator. They can also be events that represent communication between agents.
@@ -38,37 +40,63 @@ class ReviewSegInactive(BeliefsReviewer):
 
 class PremiumAddPromoter(GoalStatusPromoter):
     def __init__(self):
+        self.purchases = dict()
         super().__init__(
-            desc=segAgent+"Promotes goal - add customer to premium segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
+            desc=segAgent+"Promotes goal - add customer to premium segment", beliefs=["client_id", "amount", "avg"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()
+        promotions["intention"] = False
+        if ("amount" in self.eventQueueByTopic):
+            if (self.eventQueueByTopic["amount"][-1].value) >= 1000:
+                promotions["intention"] = True
+        if ("avg" in self.eventQueueByTopic):
+            if (self.eventQueueByTopic["avg"][-1].value >= 500):
+                promotions["intention"] = True
         return promotions
 
 class PremiumRemovePromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc=segAgent+"Promotes goal - remove customer from the premium segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
+            desc=segAgent+"Promotes goal - remove customer from the premium segment", beliefs=["client_id", "amount"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()
+        promotions["intention"] = True
+        if ("amount" in self.eventQueueByTopic):
+            if (self.eventQueueByTopic["amount"][-1].value) >= 1000:
+                promotions["intention"] = False
+        if(promotions["intention"]):
+            if ("avg" in self.eventQueueByTopic):
+                if (self.eventQueueByTopic["avg"][-1].value >= 500):
+                    promotions["intention"] = False
         return promotions
 class InactiveAddPromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc=segAgent+"Promotes goal - add customer to inactive segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
+            desc=segAgent+"Promotes goal - add customer to inactive segment", beliefs=["client_id", "date"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()
+        if ("date" in self.eventQueueByTopic):
+            if (self.eventQueueByTopic["date"][-1].value) < date(2023, 1, 1):
+                promotions["intention"] = True
+            else:
+                promotions["intention"] = False
         return promotions
 
 class InactiveRemovePromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc=segAgent+"Promotes goal - remove customer from the inactive segment", beliefs=["client_id", "purchase_value"], promotionNames=["intention"])
+            desc=segAgent+"Promotes goal - remove customer from the inactive segment", beliefs=["client_id", "date"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()
+        if ("date" in self.eventQueueByTopic):
+            if (self.eventQueueByTopic["date"][-1].value) > date(2023, 1, 1):
+                promotions["intention"] = True
+            else:
+                promotions["intention"] = False
         return promotions
 
 class PremiumAddAction(Action):
@@ -198,31 +226,10 @@ broker = GoalBroker(agents=[segAgentInstance, autAgentInstance], history=history
 
 broker.startProcess()
 
-
-
-def str_time_prop(start, end, time_format, prop):
-    """Get a time at a proportion of a range of two formatted times.
-
-    start and end should be strings specifying times formatted in the
-    given format (strftime-style), giving an interval [start, end].
-    prop specifies how a proportion of the interval to be taken after
-    start.  The returned time will be in the specified format.
-    """
-
-    stime = time.mktime(time.strptime(start, time_format))
-    etime = time.mktime(time.strptime(end, time_format))
-
-    ptime = stime + prop * (etime - stime)
-
-    return time.strftime(time_format, time.localtime(ptime))
-
-
-def random_date(start, end, prop):
-    return str_time_prop(start, end, '%m/%d/%Y %I:%M %p', prop)
 # Enter external events, from a simulator for example.
 for n in range(1000):
     broker.inputExternalEvents([
-        Event("purchase", {"client_id":random.randint(0, 100), "amount":random.choice([300,600,900,1200,1500,1800]), "date":random_date("1/1/2022 1:30 PM", "1/1/2024 1:30 PM", random.random())})
+        Event("purchase", {"client_id":random.choice([1,2,3,4,5,6,7,8,9]), "amount":random.choice([300,600,900,1200,1500,1800]), "date":date(random.randint(2021, 2024), 1, 1)})
     ])
     time.sleep(1)
 

@@ -162,6 +162,13 @@ class ReviewCustomerCoupon(BeliefsReviewer):
         # Call to superclass constructor
         super().__init__(
             desc=autAgent+"Review customer coupons", attrs=["segment-update", "client_id"]) 
+    async def reviewBeliefs(self):
+        # The event queue is cleared each time the entity is processed. Maybe you want to save the beliefs in an object variable.
+        beliefs = dict()
+        if ("segment-update" in self.eventQueueByTopic):
+            beliefs["client_id"] = self.eventQueueByTopic["segment-update"][-1].value["client_id"]
+            beliefs["segment"] = self.eventQueueByTopic["segment-update"][-1].value["segment"]
+        return beliefs
 
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
     def __init__(self):

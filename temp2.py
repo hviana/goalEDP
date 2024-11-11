@@ -9,8 +9,6 @@ import time
 
 
 segAgent = "Segmentation agent | "
-autAgent = "Automating agent | "
-
 class ReviewSegPremium(BeliefsReviewer):
     def __init__(self):
         # Call to superclass constructor
@@ -131,13 +129,69 @@ premiumRemoveGoal = PremiumRemoveGoal()
 inactiveAddGoal = InactiveAddGoal()
 inactiveRemoveGoal = InactiveRemoveGoal()
 
-segAgent = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewSegInactive(), ReviewSegPremium()], goals=[premiumAddGoal,premiumRemoveGoal,inactiveAddGoal, inactiveRemoveGoal], conflicts=[])
+segAgentInstance = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewSegInactive(), ReviewSegPremium()], goals=[premiumAddGoal,premiumRemoveGoal,inactiveAddGoal, inactiveRemoveGoal], conflicts=[])
+
+autAgent = "Automating agent | "
+
+class ReviewCustomerCoupon(BeliefsReviewer):
+    def __init__(self):
+        # Call to superclass constructor
+        super().__init__(
+            desc=autAgent+"Review customer coupons", attrs=["segment", "client_id"]) 
+
+class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
+    def __init__(self):
+        super().__init__(
+            desc=autAgent+"Promotes goal - give free shipping coupon", beliefs=["client_id"], promotionNames=["intention"])
+
+    async def promoteOrDemote(self):
+        promotions = dict()
+        return promotions
+
+class Give10PercentCouponPromoter(GoalStatusPromoter):
+    def __init__(self):
+        super().__init__(
+            desc=autAgent+"Promotes goal - Give 10 percent coupon", beliefs=["client_id"], promotionNames=["intention"])
+
+    async def promoteOrDemote(self):
+        promotions = dict()
+        return promotions
+
+class GiveFreeShippingCouponAction(Action):
+    def __init__(self):
+        super().__init__(
+            desc=autAgent+"Give free shipping coupon action", beliefs=["client_id"])
+
+    async def procedure(self) -> None:
+        print("Free shipping coupon: " +
+              str(self.eventQueueByTopic["client_id"][-1].value))
+
+class Give10PercentAction(Action):
+    def __init__(self):
+        super().__init__(
+            desc=autAgent+"Give 10 percent action", beliefs=["client_id"])
+
+    async def procedure(self) -> None:
+        print("10 percent coupon: " +
+              str(self.eventQueueByTopic["client_id"][-1].value))
+
+class Give10PercentCoupon(Goal):
+    def __init__(self):
+        super().__init__(desc=autAgent+"10 percent action coupon",
+                         promoter=Give10PercentCouponPromoter(), plan=[Give10PercentAction()], priority=0)
+class GiveFreeShippingCouponGoal(Goal):
+    def __init__(self):
+        super().__init__(desc=autAgent+"Give free shipping coupon",
+                         promoter=GiveFreeShippingCouponPromoter(), plan=[GiveFreeShippingCouponAction()], priority=0)
+
+autAgentInstance = Agent(desc="utomating agent", beliefsReviewers=[ReviewCustomerCoupon()], goals=[Give10PercentCoupon, GiveFreeShippingCouponGoal], conflicts=[])
 
 # Instantiates history to save events.
 history = InMemoryHistory()
 
 # Instantiates the event broker, which also controls the execution sequence
-broker = GoalBroker(agents=[segAgent], history=history)
+broker = GoalBroker(agents=[segAgentInstance, autAgentInstance], history=history)
+
 
 broker.startProcess()
 

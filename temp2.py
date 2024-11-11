@@ -11,8 +11,9 @@ from datetime import date
 
 
 segAgent = "Segmentation agent | "
-class ReviewSegPremium(BeliefsReviewer):
+class ReviewPurchase(BeliefsReviewer):
     def __init__(self):
+        self.purchases:dict[str,list] = dict()
         # Call to superclass constructor
         super().__init__(
             desc=segAgent+"Review purchase data, for the premium segment", attrs=["purchase"])  # Attributes can be external events, inputted or not by a simulator. They can also be events that represent communication between agents.
@@ -21,26 +22,16 @@ class ReviewSegPremium(BeliefsReviewer):
         # The event queue is cleared each time the entity is processed. Maybe you want to save the beliefs in an object variable.
         beliefs = dict()
         if ("purchase" in self.eventQueueByTopic):
-            beliefs["purchase"] = self.eventQueueByTopic["purchase"][-1].value
+            beliefs["client_id"] = self.eventQueueByTopic["purchase"][-1].value["client_id"]
+            beliefs["amount"] = self.eventQueueByTopic["purchase"][-1].value["amount"]
+            if(not beliefs["client_id"] in self.purchases):
+                self.purchases[beliefs["client_id"]] = list()
+            self.purchases[beliefs["client_id"]].append(beliefs["amount"])
+            beliefs["avg"] = sum(self.purchases[beliefs["client_id"]]) / len(self.purchases[beliefs["client_id"]])
         return beliefs
-class ReviewSegInactive(BeliefsReviewer):
-    def __init__(self):
-        promotions = dict()
-        # Call to superclass constructor
-        super().__init__(
-            desc=segAgent+"Review purchase data, for the inactive segment", attrs=["purchase"])  # Attributes can be external events, inputted or not by a simulator. They can also be events that represent communication between agents.
-
-    async def reviewBeliefs(self):
-        # The event queue is cleared each time the entity is processed. Maybe you want to save the beliefs in an object variable.
-        beliefs = dict()
-        if ("purchase" in self.eventQueueByTopic):
-            beliefs["purchase"] = self.eventQueueByTopic["purchase"][-1].value
-        return beliefs
-
 
 class PremiumAddPromoter(GoalStatusPromoter):
     def __init__(self):
-        self.purchases = dict()
         super().__init__(
             desc=segAgent+"Promotes goal - add customer to premium segment", beliefs=["client_id", "amount", "avg"], promotionNames=["intention"])
 
@@ -160,7 +151,7 @@ premiumRemoveGoal = PremiumRemoveGoal()
 inactiveAddGoal = InactiveAddGoal()
 inactiveRemoveGoal = InactiveRemoveGoal()
 
-segAgentInstance = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewSegInactive(), ReviewSegPremium()], goals=[premiumAddGoal,premiumRemoveGoal,inactiveAddGoal, inactiveRemoveGoal], conflicts=[])
+segAgentInstance = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewPurchase()], goals=[premiumAddGoal,premiumRemoveGoal,inactiveAddGoal, inactiveRemoveGoal], conflicts=[])
 
 autAgent = "Automating agent | "
 

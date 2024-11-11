@@ -96,7 +96,7 @@ class PremiumAddAction(Action):
             desc=segAgent+"Action to add customer to the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"segment-update": "premium","client_id": self.eventQueueByTopic["client_id"][-1].value}, "premium"])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Add customer to the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class PremiumRemoveAction(Action):
@@ -105,7 +105,7 @@ class PremiumRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"segment-update": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value}, "premium"])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Remove customer from the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class InactiveAddAction(Action):
@@ -114,7 +114,7 @@ class InactiveAddAction(Action):
             desc=segAgent+"Action to add customer to the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"segment-update": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}, "premium"])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Add customer to the premium segment: "+ self.eventQueueByTopic["client_id"][-1].value)
 
 class InactiveRemoveAction(Action):
@@ -123,7 +123,7 @@ class InactiveRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        requests.post('/comm', json=[{"segment-update": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}, "premium"])
+        requests.post('/comm', json=[{"topic":"segment-update", "value":{"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Remove customer from the inactive segment: "+ self.eventQueueByTopic["client_id"][-1].value)
         
 # Goals with highest priority are pursued first

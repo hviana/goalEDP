@@ -101,5 +101,8 @@ class WebGUI:
             return CoreJSONEncoder().encode(hash)
         @self.server.route('/comm', methods=['POST'])
         async def communicationCHannel():
-            events = request.json
-            self.explainer.eventBroker.inputExternalEvents(events)
+            jsonEvents = request.json
+            parsedEvents = list()
+            for jsonEvent in jsonEvents:
+                parsedEvents.append(Event(jsonEvent["topic"],jsonEvent["value"]))
+            self.explainer.eventBroker.inputExternalEvents(parsedEvents)

@@ -102,7 +102,7 @@ class WebGUI:
         @self.server.route('/comm', methods=['POST'])
         async def communicationCHannel():
             jsonEvents = request.json
-            parsedEvents = list()
+            parsedEvents:list[Event] = list()
             for jsonEvent in jsonEvents:
                 parsedEvents.append(Event(jsonEvent["topic"],jsonEvent["value"]))
             self.explainer.eventBroker.inputExternalEvents(parsedEvents)

@@ -198,12 +198,31 @@ broker = GoalBroker(agents=[segAgentInstance, autAgentInstance], history=history
 
 broker.startProcess()
 
+
+
+def str_time_prop(start, end, time_format, prop):
+    """Get a time at a proportion of a range of two formatted times.
+
+    start and end should be strings specifying times formatted in the
+    given format (strftime-style), giving an interval [start, end].
+    prop specifies how a proportion of the interval to be taken after
+    start.  The returned time will be in the specified format.
+    """
+
+    stime = time.mktime(time.strptime(start, time_format))
+    etime = time.mktime(time.strptime(end, time_format))
+
+    ptime = stime + prop * (etime - stime)
+
+    return time.strftime(time_format, time.localtime(ptime))
+
+
+def random_date(start, end, prop):
+    return str_time_prop(start, end, '%m/%d/%Y %I:%M %p', prop)
 # Enter external events, from a simulator for example.
 for n in range(1000):
     broker.inputExternalEvents([
-        Event("accident", {"victims": [
-            {"mmHg": [random.randint(10, 15), random.randint(5, 10)], "bpm":random.randint(50, 110)}], "coord": [random.randint(0, 100), random.randint(0, 100)], "smoke": random.randint(0, 100)}),
-        Event("battery", {"percentage":random.randint(0, 100)})
+        Event("purchase", {"client_id":random.randint(0, 100), "amount":random.choice([300,600,900,1200,1500,1800]), "date":random_date("1/1/2022 1:30 PM", "1/1/2024 1:30 PM", random.random())})
     ])
     time.sleep(1)
 

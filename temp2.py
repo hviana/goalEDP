@@ -173,7 +173,7 @@ class ReviewCustomerCoupon(BeliefsReviewer):
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc=autAgent+"Promotes goal - give free shipping coupon", beliefs=["client_id"], promotionNames=["intention"])
+            desc=autAgent+"Promotes goal - give free shipping coupon", beliefs=["client_id", "segment"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()
@@ -182,7 +182,7 @@ class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
 class Give10PercentCouponPromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc=autAgent+"Promotes goal - Give 10 percent coupon", beliefs=["client_id"], promotionNames=["intention"])
+            desc=autAgent+"Promotes goal - Give 10 percent coupon", beliefs=["client_id", "segment"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()

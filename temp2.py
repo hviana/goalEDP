@@ -6,6 +6,7 @@ from src.goalEDP.extensions.web_gui import WebGUI
 
 import random
 import time
+import requests
 
 
 segAgent = "Segmentation agent | "
@@ -76,7 +77,7 @@ class PremiumAddAction(Action):
             desc=segAgent+"Action to add customer to the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        print("TODO")
+        r = requests.post('/post', json={"client_id": self.eventQueueByTopic["client_id"][-1].value})
 
 class PremiumRemoveAction(Action):
     def __init__(self):

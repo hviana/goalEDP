@@ -99,3 +99,7 @@ class WebGUI:
             reqData = request.json
             hash = await self.explainer.history.hashAsync(reqData)
             return CoreJSONEncoder().encode(hash)
+        @self.server.route('/comm', methods=['POST'])
+        async def communicationCHannel():
+            events = request.json
+            self.explainer.eventBroker.inputExternalEvents(events)

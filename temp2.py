@@ -4,6 +4,8 @@ from src.goalEDP.storages.in_memory import InMemoryHistory
 from src.goalEDP.core import Event
 from src.goalEDP.extensions.web_gui import WebGUI
 
+import threading
+
 import random
 import time
 import requests
@@ -148,12 +150,7 @@ class InactiveRemoveGoal(Goal):
         super().__init__(desc=segAgent+"remove customer from the inactive segment",
                          promoter=InactiveRemovePromoter(), plan=[InactiveRemoveAction()], priority=0)
 
-premiumAddGoal = PremiumAddGoal()
-premiumRemoveGoal = PremiumRemoveGoal()
-inactiveAddGoal = InactiveAddGoal()
-inactiveRemoveGoal = InactiveRemoveGoal()
-
-segAgentInstance = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewPurchase()], goals=[premiumAddGoal,premiumRemoveGoal,inactiveAddGoal, inactiveRemoveGoal], conflicts=[])
+segAgentInstance = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewPurchase()], goals=[PremiumAddGoal(),PremiumRemoveGoal(),InactiveAddGoal(), InactiveRemoveGoal()], conflicts=[])
 
 autAgent = "Automating agent | "
 
@@ -239,7 +236,7 @@ class GiveFreeShippingCouponGoal(Goal):
         super().__init__(desc=autAgent+"Give free shipping coupon",
                          promoter=GiveFreeShippingCouponPromoter(), plan=[GiveFreeShippingCouponAction()], priority=0)
 
-autAgentInstance = Agent(desc="Automating agent", beliefsReviewers=[ReviewCustomerCoupon()], goals=[Give10PercentCoupon, GiveFreeShippingCouponGoal], conflicts=[])
+autAgentInstance = Agent(desc="Automating agent", beliefsReviewers=[ReviewCustomerCoupon()], goals=[Give10PercentCoupon(), GiveFreeShippingCouponGoal()], conflicts=[])
 
 # Instantiates history to save events.
 history = InMemoryHistory()
@@ -248,7 +245,19 @@ history = InMemoryHistory()
 broker = GoalBroker(agents=[segAgentInstance, autAgentInstance], history=history)
 
 
+
+explainer = SimpleExplainer(broker, broker.history)
+# Instantiates the explanation generator web graphical interface.
+interface = WebGUI(explainer)
+
+# Starts the web graphical interface server.
+# The IP and port will be printed on the terminal.
+# You must open the respective ip and port in the browser.
+monitoring_thread = threading.Thread(target = interface.server.run)
+monitoring_thread.start()
 broker.startProcess()
+
+
 
 # Enter external events, from a simulator for example.
 for n in range(1000):
@@ -258,12 +267,4 @@ for n in range(1000):
     time.sleep(1)
 
 # instantiates the explanation manager
-explainer = SimpleExplainer(broker, broker.history)
 
-# Instantiates the explanation generator web graphical interface.
-interface = WebGUI(explainer)
-
-# Starts the web graphical interface server.
-# The IP and port will be printed on the terminal.
-# You must open the respective ip and port in the browser.
-interface.server.run()

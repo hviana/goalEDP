@@ -118,6 +118,7 @@ class Action(EventHandler):
         events = list()
         toExecute = False
         for goal in self.goals:
+            print(self.eventQueueByTopic[goal.desc][-1].value)
             # Check only the last one
             if (goal.desc in self.eventQueueByTopic):
                 if self.eventQueueByTopic[goal.desc][-1].value == True:

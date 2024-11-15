@@ -126,7 +126,10 @@ class Action(EventHandler):
                     break
         if toExecute:
             try:
-                await self.procedure()
+                communicationEvents = await self.procedure()
+                if(communicationEvents is None):
+                    for c in communicationEvents:
+                      events.append(c)  
                 events.append(Event(self.desc, "SUCCESS"))
             except Exception as e:
                 events.append(Event(self.desc, "ERROR: " + str(e)))

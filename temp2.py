@@ -250,20 +250,6 @@ history = InMemoryHistory()
 broker = GoalBroker(agents=[segAgentInstance, autAgentInstance], history=history)
 
 
-
-explainer = SimpleExplainer(broker, broker.history)
-# Instantiates the explanation generator web graphical interface.
-interface = WebGUI(explainer)
-
-# Starts the web graphical interface server.
-# The IP and port will be printed on the terminal.
-# You must open the respective ip and port in the browser.
-monitoring_thread = threading.Thread(target = interface.server.run)
-monitoring_thread.start()
-broker.startProcess()
-
-
-
 # Enter external events, from a simulator for example.
 for n in range(1000):
     broker.inputExternalEvents([
@@ -272,4 +258,13 @@ for n in range(1000):
     time.sleep(1)
 
 # instantiates the explanation manager
+explainer = SimpleExplainer(broker, broker.history)
+
+# Instantiates the explanation generator web graphical interface.
+interface = WebGUI(explainer)
+
+# Starts the web graphical interface server.
+# The IP and port will be printed on the terminal.
+# You must open the respective ip and port in the browser.
+interface.server.run()
 

@@ -127,7 +127,7 @@ class Action(EventHandler):
         if toExecute:
             try:
                 communicationEvents = await self.procedure()
-                if(communicationEvents is None):
+                if(communicationEvents is not None):
                     for c in communicationEvents:
                       events.append(c)  
                 events.append(Event(self.desc, "SUCCESS"))

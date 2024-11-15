@@ -72,7 +72,7 @@ class InactiveAddPromoter(GoalStatusPromoter):
     async def promoteOrDemote(self):
         promotions = dict()
         if ("date" in self.eventQueueByTopic):
-            if (self.eventQueueByTopic["date"][-1].value) < date(2023, 1, 1):
+            if (self.eventQueueByTopic["date"][-1].value) < time.mktime(date(2023, 1, 1).timetuple()):
                 promotions["intention"] = True
             else:
                 promotions["intention"] = False
@@ -86,7 +86,7 @@ class InactiveRemovePromoter(GoalStatusPromoter):
     async def promoteOrDemote(self):
         promotions = dict()
         if ("date" in self.eventQueueByTopic):
-            if (self.eventQueueByTopic["date"][-1].value) > date(2023, 1, 1):
+            if (self.eventQueueByTopic["date"][-1].value) > time.mktime(date(2023, 1, 1).timetuple()):
                 promotions["intention"] = True
             else:
                 promotions["intention"] = False
@@ -262,7 +262,7 @@ broker.startProcess()
 # Enter external events, from a simulator for example.
 for n in range(1000):
     broker.inputExternalEvents([
-        Event("purchase", {"client_id":random.choice([1,2,3,4,5,6,7,8,9]), "amount":random.choice([300,600,900,1200,1500,1800]), "date":date(random.randint(2021, 2024), 1, 1)})
+        Event("purchase", {"client_id":random.choice([1,2,3,4,5,6,7,8,9]), "amount":random.choice([300,600,900,1200,1500,1800]), "date":time.mktime(date(random.randint(2021, 2024), 1, 1).timetuple())})
     ])
     time.sleep(1)
 

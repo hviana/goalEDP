@@ -100,9 +100,10 @@ class WebGUI:
             hash = await self.explainer.history.hashAsync(reqData)
             return CoreJSONEncoder().encode(hash)
         @self.server.route('/comm', methods=['POST'])
-        async def communicationCHannel():
+        async def communicationChannel():
             jsonEvents = request.json
             parsedEvents:list[Event] = list()
             for jsonEvent in jsonEvents:
                 parsedEvents.append(Event(jsonEvent["topic"],jsonEvent["value"]))
             self.explainer.eventBroker.inputExternalEvents(parsedEvents)
+            return CoreJSONEncoder().encode(dict())

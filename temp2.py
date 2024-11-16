@@ -26,6 +26,7 @@ class ReviewPurchase(BeliefsReviewer):
         if ("purchase" in self.eventQueueByTopic):
             beliefs["client_id"] = self.eventQueueByTopic["purchase"][-1].value["client_id"]
             beliefs["amount"] = self.eventQueueByTopic["purchase"][-1].value["amount"]
+            beliefs["date"] = self.eventQueueByTopic["purchase"][-1].value["date"]
             if(not beliefs["client_id"] in self.purchases):
                 self.purchases[beliefs["client_id"]] = list()
             self.purchases[beliefs["client_id"]].append(beliefs["amount"])
@@ -101,7 +102,7 @@ class PremiumAddAction(Action):
         eventValue = dict()
         eventValue["accessed_site"] = random.choice([True,False])
         eventValue["abandoned_cart"]=random.choice([True,False])
-        eventValue["segment-premium"] = True
+        eventValue["segment_premium"] = True
         eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
         #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Add customer to the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
@@ -116,7 +117,7 @@ class PremiumRemoveAction(Action):
         eventValue = dict()
         eventValue["accessed_site"] = random.choice([True,False])
         eventValue["abandoned_cart"]=random.choice([True,False])
-        eventValue["segment-premium"] = False
+        eventValue["segment_premium"] = False
         eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
         #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Remove customer from the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
@@ -131,7 +132,7 @@ class InactiveAddAction(Action):
         eventValue = dict()
         eventValue["accessed_site"] = random.choice([True,False])
         eventValue["abandoned_cart"]=random.choice([True,False])
-        eventValue["segment-inactive"] = True
+        eventValue["segment_inactive"] = True
         eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
         #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Add customer to the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
@@ -146,7 +147,7 @@ class InactiveRemoveAction(Action):
         eventValue = dict()
         eventValue["accessed_site"] = random.choice([True,False])
         eventValue["abandoned_cart"]=random.choice([True,False])
-        eventValue["segment-inactive"] = False
+        eventValue["segment_inactive"] = False
         eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
         #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Remove customer from the inactive segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
@@ -188,21 +189,20 @@ class ReviewCustomerCoupons(BeliefsReviewer):
         beliefs = dict()
         if("segmentation-update" in self.eventQueueByTopic):
             for segUpdate in self.eventQueueByTopic["segmentation-update"]:
-                if("segment-premium" in segUpdate.value and "segment-inactive" in self.eventQueueByTopic["segmentation-update"][-1].value ):
+                if("segment_premium" in segUpdate.value and "segment_inactive" in self.eventQueueByTopic["segmentation-update"][-1].value ):
                     beliefs["client_id"] = segUpdate.value["client_id"]
-                    if("segment-premium" in segUpdate.value):
-                        beliefs["segment-premium"] = segUpdate.value["segment-premium"],
-                    if("segment-inactive" in segUpdate.value):
-                        beliefs["segment-inactive"] = segUpdate.value["segment-inactive"],
+                    if("segment_premium" in segUpdate.value):
+                        beliefs["segment_premium"] = segUpdate.value["segment_premium"],
+                    if("segment_inactive" in segUpdate.value):
+                        beliefs["segment_inactive"] = segUpdate.value["segment_inactive"],
                     beliefs["abandoned_cart"] = segUpdate.value["abandoned_cart"]
                     beliefs["accessed_site"] = segUpdate.value["accessed_site"]
-                    print(beliefs)
         return beliefs
 
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc=autAgent+"Promotes goal - give free shipping coupon", beliefs=["client_id", "segment-premium","segment-inactive", "accessed_site"], promotionNames=["intention"])
+            desc=autAgent+"Promotes goal - give free shipping coupon", beliefs=["client_id", "segment_premium","segment_inactive", "accessed_site"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()
@@ -210,8 +210,8 @@ class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
         outInactiveSegment = False
         accessedSite = False
         if ("segments" in self.eventQueueByTopic):
-            enterPremiumSegment = (self.eventQueueByTopic["segment-premium"][-1].value == True)
-            outInactiveSegment = (self.eventQueueByTopic["segment-inactive"][-1].value == False)
+            enterPremiumSegment = (self.eventQueueByTopic["segment_premium"][-1].value == True)
+            outInactiveSegment = (self.eventQueueByTopic["segment_inactive"][-1].value == False)
         if ("accessed_site" in self.eventQueueByTopic):
             accessedSite = (self.eventQueueByTopic["accessed_site"][-1].value == True)
         if(accessedSite and (enterPremiumSegment or outInactiveSegment)):
@@ -223,14 +223,14 @@ class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
 class Give10PercentCouponPromoter(GoalStatusPromoter):
     def __init__(self):
         super().__init__(
-            desc=autAgent+"Promotes goal - Give 10 percent coupon", beliefs=["client_id", "segment-premium", "abandoned_cart"], promotionNames=["intention"])
+            desc=autAgent+"Promotes goal - Give 10 percent coupon", beliefs=["client_id", "segment_premium", "abandoned_cart"], promotionNames=["intention"])
 
     async def promoteOrDemote(self):
         promotions = dict()
         enterPremiumSegment = False
         abandonedCart = False
         if ("segments" in self.eventQueueByTopic):
-            enterPremiumSegment = (self.eventQueueByTopic["segment-premium"][-1].value == True)
+            enterPremiumSegment = (self.eventQueueByTopic["segment_premium"][-1].value == True)
         if ("abandoned_cart" in self.eventQueueByTopic):
             abandonedCart = (self.eventQueueByTopic["abandoned_cart"][-1].value == True)
         if(abandonedCart and enterPremiumSegment):

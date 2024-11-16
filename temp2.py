@@ -197,6 +197,7 @@ class ReviewCustomerCoupons(BeliefsReviewer):
                         beliefs["segment_inactive"] = segUpdate.value["segment_inactive"],
                     beliefs["abandoned_cart"] = segUpdate.value["abandoned_cart"]
                     beliefs["accessed_site"] = segUpdate.value["accessed_site"]
+        print(beliefs)
         return beliefs
 
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):

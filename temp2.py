@@ -186,13 +186,17 @@ class ReviewCustomerCoupons(BeliefsReviewer):
     async def reviewBeliefs(self):
         # The event queue is cleared each time the entity is processed. Maybe you want to save the beliefs in an object variable.
         beliefs = dict()
-        if ("segmentation-update" in self.eventQueueByTopic):
-            beliefs["client_id"] = self.eventQueueByTopic["segmentation-update"][-1].value["client_id"]
-            beliefs["segment-premium"] = self.eventQueueByTopic["segmentation-update"][-1].value["segment-premium"],
-            beliefs["segment-inactive"] = self.eventQueueByTopic["segmentation-update"][-1].value["segment-inactive"],
-            beliefs["abandoned_cart"] = self.eventQueueByTopic["segmentation-update"][-1].value["abandoned_cart"]
-            beliefs["accessed_site"] = self.eventQueueByTopic["segmentation-update"][-1].value["accessed_site"]
-            print(beliefs)
+        if("segmentation-update" in self.eventQueueByTopic):
+            for segUpdate in self.eventQueueByTopic["segmentation-update"]:
+                if("segment-premium" in segUpdate.value and "segment-inactive" in self.eventQueueByTopic["segmentation-update"][-1].value ):
+                    beliefs["client_id"] = segUpdate.value["client_id"]
+                    if("segment-premium" in segUpdate.value):
+                        beliefs["segment-premium"] = segUpdate.value["segment-premium"],
+                    if("segment-inactive" in segUpdate.value):
+                        beliefs["segment-inactive"] = segUpdate.value["segment-inactive"],
+                    beliefs["abandoned_cart"] = segUpdate.value["abandoned_cart"]
+                    beliefs["accessed_site"] = segUpdate.value["accessed_site"]
+                    print(beliefs)
         return beliefs
 
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):

@@ -248,9 +248,10 @@ history = InMemoryHistory()
 # Instantiates the event broker, which also controls the execution sequence
 broker = GoalBroker(agents=[segAgentInstance, autAgentInstance], history=history)
 
+broker.startProcess()
 
 # Enter external events, from a simulator for example.
-for n in range(1000):
+for n in range(10):
     broker.inputExternalEvents([
         Event("purchase", {"client_id":random.choice([1,2,3,4,5,6,7,8,9]), "amount":random.choice([300,600,900,1200,1500,1800]), "date":time.mktime(date(random.randint(2021, 2024), 1, 1).timetuple())})
     ])

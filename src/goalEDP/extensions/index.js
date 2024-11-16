@@ -893,9 +893,9 @@ class Explainer {
       prMax[topic][maxHash] = prData[topic][maxHash];
     }
     const events = {};
-    for (const topic in prData) {
+    for (const topic in prMax) {
       events[topic] = {};
-      for (const valHash in prData[topic]) {
+      for (const valHash in prMax[topic]) {
         events[topic][valHash] = await Explainer.fillCause(
           effects,
           topic,

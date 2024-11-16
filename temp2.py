@@ -235,7 +235,7 @@ class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
         enterPremiumSegment = False
         outInactiveSegment = False
         accessedSite = False
-        if ("segments" in self.eventQueueByTopic):
+        if ("segment_premium" in self.eventQueueByTopic and "segment_inactive" in self.eventQueueByTopic):
             enterPremiumSegment = (
                 self.eventQueueByTopic["segment_premium"][-1].value == True)
             outInactiveSegment = (
@@ -259,7 +259,7 @@ class Give10PercentCouponPromoter(GoalStatusPromoter):
         promotions = dict()
         enterPremiumSegment = False
         abandonedCart = False
-        if ("segments" in self.eventQueueByTopic):
+        if ("segment_premium" in self.eventQueueByTopic):
             enterPremiumSegment = (
                 self.eventQueueByTopic["segment_premium"][-1].value == True)
         if ("abandoned_cart" in self.eventQueueByTopic):

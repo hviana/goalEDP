@@ -98,9 +98,14 @@ class PremiumAddAction(Action):
             desc=segAgent+"Action to add customer to the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        eventValue = dict()
+        eventValue["accessed_site"] = random.choice([True,False])
+        eventValue["abandoned_cart"]=random.choice([True,False])
+        eventValue["segment"] = "premium"
+        eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Add customer to the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segmentation-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("segmentation-update", eventValue)]
 
 class PremiumRemoveAction(Action):
     def __init__(self):
@@ -108,9 +113,14 @@ class PremiumRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        eventValue = dict()
+        eventValue["accessed_site"] = random.choice([True,False])
+        eventValue["abandoned_cart"]=random.choice([True,False])
+        eventValue["segment"] = "not-premium"
+        eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Remove customer from the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segmentation-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("segmentation-update", eventValue)]
 
 class InactiveAddAction(Action):
     def __init__(self):
@@ -118,9 +128,14 @@ class InactiveAddAction(Action):
             desc=segAgent+"Action to add customer to the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        eventValue = dict()
+        eventValue["accessed_site"] = random.choice([True,False])
+        eventValue["abandoned_cart"]=random.choice([True,False])
+        eventValue["segment"] = "inactive"
+        eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Add customer to the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segmentation-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("segmentation-update", eventValue)]
 
 class InactiveRemoveAction(Action):
     def __init__(self):
@@ -128,9 +143,14 @@ class InactiveRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        eventValue = dict()
+        eventValue["accessed_site"] = random.choice([True,False])
+        eventValue["abandoned_cart"]=random.choice([True,False])
+        eventValue["segment"] = "not-inactive"
+        eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Remove customer from the inactive segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segmentation-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("segmentation-update", eventValue)]
         
 # Goals with highest priority are pursued first
 
@@ -171,6 +191,7 @@ class ReviewCustomerCoupons(BeliefsReviewer):
             beliefs["segment"] = self.eventQueueByTopic["segmentation-update"][-1].value["segment"],
             beliefs["abandoned_cart"] = self.eventQueueByTopic["segmentation-update"][-1].value["abandoned_cart"]
             beliefs["accessed_site"] = self.eventQueueByTopic["segmentation-update"][-1].value["accessed_site"]
+            print(beliefs)
         return beliefs
 
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
@@ -192,7 +213,6 @@ class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
             promotions["intention"] = True
         else:
             promotions["intention"] = False
-        print(promotions)
         return promotions
 
 class Give10PercentCouponPromoter(GoalStatusPromoter):

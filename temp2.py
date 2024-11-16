@@ -98,9 +98,9 @@ class PremiumAddAction(Action):
             desc=segAgent+"Action to add customer to the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"check-segmentation", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Add customer to the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segment-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("check-segmentation", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment":"premium","client_id": self.eventQueueByTopic["client_id"][-1].value})]
 
 class PremiumRemoveAction(Action):
     def __init__(self):
@@ -108,9 +108,9 @@ class PremiumRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the premium segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"check-segmentation", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Remove customer from the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segment-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("check-segmentation", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-premium","client_id": self.eventQueueByTopic["client_id"][-1].value})]
 
 class InactiveAddAction(Action):
     def __init__(self):
@@ -118,9 +118,9 @@ class InactiveAddAction(Action):
             desc=segAgent+"Action to add customer to the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"check-segmentation", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Add customer to the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segment-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("check-segmentation", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "inactive","client_id": self.eventQueueByTopic["client_id"][-1].value})]
 
 class InactiveRemoveAction(Action):
     def __init__(self):
@@ -128,9 +128,9 @@ class InactiveRemoveAction(Action):
             desc=segAgent+"Action to remove customer from the inactive segment", beliefs=["client_id"])
 
     async def procedure(self) -> None:
-        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segment-update", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
+        #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"check-segmentation", "value":{"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value}}])
         print("Remove customer from the inactive segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
-        return [Event("segment-update", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value})]
+        return [Event("check-segmentation", {"accessed_site":random.choice([True,False]),"abandoned_cart":random.choice([True,False]),"segment": "not-inactive","client_id": self.eventQueueByTopic["client_id"][-1].value})]
         
 # Goals with highest priority are pursued first
 
@@ -158,19 +158,19 @@ segAgentInstance = Agent(desc="Segmentation agent", beliefsReviewers=[ReviewPurc
 
 autAgent = "Automating agent | "
 
-class ReviewCustomerCoupon(BeliefsReviewer):
+class ReviewCustomerCoupons(BeliefsReviewer):
     def __init__(self):
         # Call to superclass constructor
         super().__init__(
-            desc=autAgent+"Review customer coupons", attrs=["segment-update", "client_id"]) 
+            desc=autAgent+"Review customer coupons", attrs=["check-segmentation"]) 
     async def reviewBeliefs(self):
         # The event queue is cleared each time the entity is processed. Maybe you want to save the beliefs in an object variable.
         beliefs = dict()
-        if ("segment-update" in self.eventQueueByTopic):
-            beliefs["client_id"] = self.eventQueueByTopic["segment-update"][-1].value["client_id"]
-            beliefs["segment"] = self.eventQueueByTopic["segment-update"][-1].value["segment"],
-            beliefs["abandoned_cart"] = self.eventQueueByTopic["segment-update"][-1].value["abandoned_cart"]
-            beliefs["accessed_site"] = self.eventQueueByTopic["segment-update"][-1].value["accessed_site"]
+        if ("check-segmentation" in self.eventQueueByTopic):
+            beliefs["client_id"] = self.eventQueueByTopic["check-segmentation"][-1].value["client_id"]
+            beliefs["segment"] = self.eventQueueByTopic["check-segmentation"][-1].value["segment"],
+            beliefs["abandoned_cart"] = self.eventQueueByTopic["check-segmentation"][-1].value["abandoned_cart"]
+            beliefs["accessed_site"] = self.eventQueueByTopic["check-segmentation"][-1].value["accessed_site"]
         return beliefs
 
 class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
@@ -240,7 +240,7 @@ class GiveFreeShippingCouponGoal(Goal):
         super().__init__(desc=autAgent+"Give free shipping coupon",
                          promoter=GiveFreeShippingCouponPromoter(), plan=[GiveFreeShippingCouponAction()], priority=0)
 
-autAgentInstance = Agent(desc="Automating agent", beliefsReviewers=[ReviewCustomerCoupon()], goals=[Give10PercentCoupon(), GiveFreeShippingCouponGoal()], conflicts=[])
+autAgentInstance = Agent(desc="Automating agent", beliefsReviewers=[ReviewCustomerCoupons()], goals=[Give10PercentCoupon(), GiveFreeShippingCouponGoal()], conflicts=[])
 
 # Instantiates history to save events.
 history = InMemoryHistory()

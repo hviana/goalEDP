@@ -118,7 +118,6 @@ class PremiumRemoveAction(Action):
         eventValue["abandoned_cart"]=random.choice([True,False])
         eventValue["segments"] = ["not-premium"]
         eventValue["client_id"] = self.eventQueueByTopic["client_id"][-1].value
-        print(eventValue)
         #requests.post('http://127.0.0.1:5000/comm', json=[{"topic":"segmentation-update", "value":eventValue}])
         print("Remove customer from the premium segment: "+ str(self.eventQueueByTopic["client_id"][-1].value))
         return [Event("segmentation-update", eventValue)]
@@ -206,7 +205,7 @@ class GiveFreeShippingCouponPromoter(GoalStatusPromoter):
         accessedSite = False
         if ("segments" in self.eventQueueByTopic):
             enterPremiumSegment = (self.eventQueueByTopic["segments"][-1].value == "premium")
-            outInactiveSegment = ("not-inactive" in self.eventQueueByTopic["segments"][-1].value)
+            outInactiveSegment = ("not-inactive" in self.eventQueueByTopic["segments"][-1].value[0])
         if ("accessed_site" in self.eventQueueByTopic):
             accessedSite = (self.eventQueueByTopic["accessed_site"][-1].value == True)
         if(accessedSite and (enterPremiumSegment or outInactiveSegment)):
@@ -225,7 +224,7 @@ class Give10PercentCouponPromoter(GoalStatusPromoter):
         enterPremiumSegment = False
         abandonedCart = False
         if ("segments" in self.eventQueueByTopic):
-            enterPremiumSegment = ("premium" in self.eventQueueByTopic["segments"][-1].value)
+            enterPremiumSegment = ("premium" in self.eventQueueByTopic["segments"][-1].value[0])
         if ("abandoned_cart" in self.eventQueueByTopic):
             abandonedCart = (self.eventQueueByTopic["abandoned_cart"][-1].value == True)
         if(abandonedCart and enterPremiumSegment):

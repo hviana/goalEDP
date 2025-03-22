@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "goalEDP"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = ["flask[async]", "flask", "nest_asyncio", "uuid", "deepdiff", "requests"]
 keywords = ["scientific", "paradigms", "agents", "explainability"]
 authors = [

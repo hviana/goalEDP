@@ -289,22 +289,22 @@ class Drawer {
                     <ul class="dropdown-menu">
                       <li><a class="dropdown-item" href="javascript:Drawer.drawExplanationLevel(Explainer.possibleEffects,['${event.id}'],${
                 level + 1
-              },${level})">Metod: possibleEffects</a></li>
+              },${level})">Method: possibleEffects</a></li>
                       <li><a class="dropdown-item" href="javascript:Drawer.drawExplanationLevel(Explainer.possibleEffectsMaxProbabilities,['${event.id}'],${
                 level + 1
-              },${level})">Metod: possibleEffects  + Max probabilities</a></li>
+              },${level})">Method: possibleEffects  + Max probabilities</a></li>
                       <li><a class="dropdown-item" href="javascript:Drawer.drawExplanationLevel(Explainer.effectsOfWithProbabilities,['${event.id}'],${
                 level + 1
-              },${level})">Metods: effectsOf + possibleEffects</a></li>
+              },${level})">Methods: effectsOf + possibleEffects</a></li>
                       <li><a class="dropdown-item" href="javascript:Drawer.drawExplanationLevel(Explainer.possibleCauses,['${event.id}'],${
                 level - 1
-              },${level})">Metod: possibleCauses</a></li>
+              },${level})">Method: possibleCauses</a></li>
                       <li><a class="dropdown-item" href="javascript:Drawer.drawExplanationLevel(Explainer.possibleCausesMaxProbabilities,['${event.id}'],${
                 level - 1
-              },${level})">Metod: possibleCauses + Max probabilities</a></li>
+              },${level})">Method: possibleCauses + Max probabilities</a></li>
                       <li><a class="dropdown-item" href="javascript:Drawer.drawExplanationLevel(Explainer.causesOfWithProbabilities,['${event.id}'],${
                 level - 1
-              },${level})">Metods: causesOf + possibleCauses</a></li>
+              },${level})">Methods: causesOf + possibleCauses</a></li>
                     </ul>
                     <div class="event-container">${Template.event(event)}</div>
                   </div>
